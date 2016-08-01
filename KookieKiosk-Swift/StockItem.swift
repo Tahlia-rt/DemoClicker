@@ -9,7 +9,7 @@
 import SpriteKit
 
 class StockItem : SKNode {
-
+    
     let type : String
     let flavor : String
     private var amount : Int
@@ -28,7 +28,10 @@ class StockItem : SKNode {
     private var progressBar : ProgressBar
     private var sellButton = SKSpriteNode(imageNamed: "sell_button")
     private var priceTag = SKSpriteNode(imageNamed: "price_tag")
-  
+    
+    var state : State
+    private var lastStateSwitchTime : CFAbsoluteTime
+    
     init(stockItemData: [String: AnyObject], stockItemConfiguration: [String: NSNumber], gameStateDelegate: GameStateDelegate) {
         self.gameStateDelegate = gameStateDelegate
         
@@ -55,7 +58,7 @@ class StockItem : SKNode {
         }
         
         flavor = stockItemData["flavor"] as AnyObject? as! String
-
+        
         // Create progress bar
         if type == "cookie" {
             let baseName = String(format: "item_%@", type) + "_tray_%i"
@@ -66,7 +69,12 @@ class StockItem : SKNode {
             let fullImageName = NSString(format: "item_%@_%@", type, flavor)
             progressBar = ContinuousProgressBar(emptyImageName: emptyImageName as String, fullImageName: fullImageName as String)
         }
-      
+        
+        let stateAsObject: AnyObject? = stockItemData["state"]
+        let stateAsInt = stateAsObject as! Int
+        state = State(rawValue: stateAsInt)!
+        lastStateSwitchTime = stockItemData["lastStateSwitchTime"] as AnyObject? as! CFAbsoluteTime
+        
         super.init()
         setupPriceLabel()
         setupStockingTimer(relativeX: relativeTimerPositionX!, relativeY: relativeTimerPositionY!)
@@ -78,12 +86,15 @@ class StockItem : SKNode {
         addChild(priceTag)
         addChild(stockingTimer)
         addChild(sellButton)
+        switchTo(state: state)
     }
-
+    
     required init(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
+    
+    // MARK - Setup
     func setupPriceLabel() {
         // Create price label tag
         let priceTagLabel = SKLabelNode(fontNamed: "TrebuchetMS-Bold")
@@ -105,6 +116,95 @@ class StockItem : SKNode {
         stockingTimer.zPosition = CGFloat(ZPosition.HUDForeground.rawValue)
     }
     
+    // MARK: - Updating States
+    func switchTo(state state : State) {
+        if self.state != state {
+            lastStateSwitchTime = CFAbsoluteTimeGetCurrent()
+        }
+        
+        self.state = state
+        switch state {
+        case .empty:
+            stockingTimer.hidden = true
+            sellButton.hidden = true
+            priceTag.hidden = false
+        case .stocking:
+            stockingTimer.hidden = false
+            sellButton.hidden = true
+            priceTag.hidden = true
+        case .stocked:
+            stockingTimer.hidden = true
+            sellButton.hidden = false
+            priceTag.hidden = true
+            progressBar.setProgress(percentage: 1)
+        case .selling:
+            stockingTimer.hidden = true
+            sellButton.hidden = true
+            priceTag.hidden = true
+        }
+    }
+    
+    func updateStockingTimerText() {
+        let stockingTimeTotal = CFTimeInterval(Float(maxAmount) * stockingSpeed)
+        let currentTime = CFAbsoluteTimeGetCurrent()
+        let timePassed = currentTime - lastStateSwitchTime
+        let stockingTimeLeft = stockingTimeTotal - timePassed
+        stockingTimer.text = String(format: "%.0f", stockingTimeLeft)
+    }
+    
+    func update() {
+        let currentTimeAbsolute = CFAbsoluteTimeGetCurrent()
+        let timePassed = currentTimeAbsolute - lastStateSwitchTime
+        
+        switch (state) {
+        case .stocking:
+            updateStockingTimerText()
+            amount = min(Int(Float(timePassed) / stockingSpeed), maxAmount)
+            if amount == maxAmount {
+                switchTo(state: .stocked)
+            }
+            
+        case .selling:
+            let previousAmount = amount
+            amount = maxAmount - min(maxAmount, Int(timePassed / Double(sellingSpeed)))
+            let amountSold = previousAmount - amount
+            if amountSold >= 1 {
+                gameStateDelegate.gameStateDelegateChangeMoneyBy(delta: sellingPrice * amountSold)
+                progressBar.setProgress(percentage: Float(amount) / Float(maxAmount))
+                if amount <= 0 {
+                    switchTo(state: .empty)
+                }
+            }
+        default:
+            break
+        }
+    }
+    
+    
+    // MARK: - Touches Override
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        switch state {
+        case .empty:
+            let enoughMoney = gameStateDelegate.gameStateDelegateChangeMoneyBy(delta: -stockingPrice * maxAmount)
+            if enoughMoney {
+                switchTo(state: State.stocking)
+            } else {
+                let playSound = SKAction.playSoundFileNamed("hit.wav", waitForCompletion: true)
+                runAction(playSound)
+                
+                let rotateLeft = SKAction.rotateByAngle(0.2, duration: 0.1)
+                let rotateRight = rotateLeft.reversedAction()
+                let shakeAction = SKAction.sequence([rotateLeft, rotateRight])
+                let repeatAction = SKAction.repeatAction(shakeAction, count: 3)
+                priceTag.runAction(repeatAction)
+            }
+        case .stocked:
+            switchTo(state: State.selling)
+        default:
+            break
+        }
+    }
+    
     // MARK: write dictionary for storage of stockitem
     func data() -> NSDictionary {
         let data = NSMutableDictionary()
@@ -113,7 +213,8 @@ class StockItem : SKNode {
         data["amount"] = amount
         data["x"] = relativeX
         data["y"] = relativeY
+        data["state"] = state.rawValue
         return data
     }
-
+    
 }

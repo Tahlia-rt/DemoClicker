@@ -10,5 +10,9 @@ enum ZPosition: Int {
     case background, stockItemsBackground, stockItemsForeground, HUDBackground, HUDForeground
 }
 
+enum State: Int {
+  case empty, stocking, stocked, selling
+}
+
 let TimeScale: Float = 1
 

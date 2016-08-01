@@ -28,7 +28,7 @@ class DiscreteProgressBar : ProgressBar {
                 spritesTemp.append(SKTexture(image: image!))
                 fileExists = true
             }
-            count++
+            count += 1
         } while fileExists
         sprites = spritesTemp
         currentSprite = SKSpriteNode(texture: spritesTemp[0])

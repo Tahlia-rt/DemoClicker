@@ -66,7 +66,7 @@
 		660CB3AC197433310056DB9E /* KookieKiosk-SwiftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "KookieKiosk-SwiftTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		660CB3B1197433310056DB9E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		660CB3B2197433310056DB9E /* KookieKiosk_SwiftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KookieKiosk_SwiftTests.swift; sourceTree = "<group>"; };
-		660CB3C319743ECA0056DB9E /* StockItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StockItem.swift; sourceTree = "<group>"; };
+		660CB3C319743ECA0056DB9E /* StockItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.swift; path = StockItem.swift; sourceTree = "<group>"; tabWidth = 4; };
 		660CB3C5197440B30056DB9E /* Customer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Customer.swift; sourceTree = "<group>"; };
 		660CB3C7197447670056DB9E /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		661B13DA197EAC0500591825 /* ContinuousProgressBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContinuousProgressBar.swift; sourceTree = "<group>"; };
@@ -92,6 +92,45 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		147B56E01D500E940041260E /* Progress Bar */ = {
+			isa = PBXGroup;
+			children = (
+				668ED1641976971B00243435 /* ProgressBar.swift */,
+				660806CE198EB5CA00F44B65 /* DiscreteProgressBar.swift */,
+				661B13DA197EAC0500591825 /* ContinuousProgressBar.swift */,
+			);
+			name = "Progress Bar";
+			sourceTree = "<group>";
+		};
+		147B56E11D500EB10041260E /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				660CB3C7197447670056DB9E /* Constants.swift */,
+				660CB39B197433310056DB9E /* AppDelegate.swift */,
+				668ED1621974938D00243435 /* GameStateDelegate.swift */,
+			);
+			name = Common;
+			sourceTree = "<group>";
+		};
+		147B56E21D500EC20041260E /* GameSks */ = {
+			isa = PBXGroup;
+			children = (
+				660CB39D197433310056DB9E /* GameScene.sks */,
+				660CB39F197433310056DB9E /* GameScene.swift */,
+				660CB3A1197433310056DB9E /* GameViewController.swift */,
+			);
+			name = GameSks;
+			sourceTree = "<group>";
+		};
+		147B56E31D500ECD0041260E /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				660CB3C319743ECA0056DB9E /* StockItem.swift */,
+				660CB3C5197440B30056DB9E /* Customer.swift */,
+			);
+			name = Models;
+			sourceTree = "<group>";
+		};
 		660CB38D197433310056DB9E = {
 			isa = PBXGroup;
 			children = (
@@ -113,20 +152,10 @@
 		660CB398197433310056DB9E /* KookieKiosk-Swift */ = {
 			isa = PBXGroup;
 			children = (
-				660CB3C7197447670056DB9E /* Constants.swift */,
-				660CB39B197433310056DB9E /* AppDelegate.swift */,
-				660CB39D197433310056DB9E /* GameScene.sks */,
-				660CB39F197433310056DB9E /* GameScene.swift */,
-				660CB3A1197433310056DB9E /* GameViewController.swift */,
-				660CB3C319743ECA0056DB9E /* StockItem.swift */,
-				660CB3C5197440B30056DB9E /* Customer.swift */,
-				668ED1621974938D00243435 /* GameStateDelegate.swift */,
-				668ED1641976971B00243435 /* ProgressBar.swift */,
-				660806CE198EB5CA00F44B65 /* DiscreteProgressBar.swift */,
-				661B13DA197EAC0500591825 /* ContinuousProgressBar.swift */,
-				660CB3A3197433310056DB9E /* Main.storyboard */,
-				660CB3C21974394E0056DB9E /* Resources */,
-				660CB3A6197433310056DB9E /* Images.xcassets */,
+				147B56E11D500EB10041260E /* Common */,
+				147B56E21D500EC20041260E /* GameSks */,
+				147B56E31D500ECD0041260E /* Models */,
+				147B56E01D500E940041260E /* Progress Bar */,
 				660CB399197433310056DB9E /* Supporting Files */,
 			);
 			path = "KookieKiosk-Swift";
@@ -135,6 +164,9 @@
 		660CB399197433310056DB9E /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				660CB3C21974394E0056DB9E /* Resources */,
+				660CB3A6197433310056DB9E /* Images.xcassets */,
+				660CB3A3197433310056DB9E /* Main.storyboard */,
 				660CB39A197433310056DB9E /* Info.plist */,
 			);
 			name = "Supporting Files";
