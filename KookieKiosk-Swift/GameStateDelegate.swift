@@ -9,5 +9,6 @@
 protocol GameStateDelegate {
     
     func gameStateDelegateChangeMoneyBy(delta delta: Int) -> Bool
-    
+    func gameStateServeCustomerWithItemOfType(type type: String, flavor: String)
+  
 }

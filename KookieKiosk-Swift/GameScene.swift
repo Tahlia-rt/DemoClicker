@@ -14,6 +14,9 @@ class GameScene: SKScene, GameStateDelegate {
   var stockItemConfigurations = [String: [String: NSNumber]]()
   
   var moneyLabel = SKLabelNode(fontNamed: "TrebuchetMS-Bold")
+  var customer : Customer?
+  var timeOfLastCustomer : CFAbsoluteTime = CFAbsoluteTimeGetCurrent()
+  var timeTillNextCustomer : CFTimeInterval = CFTimeInterval(Float((arc4random() % 15 + 15)) * TimeScale)
   
   override func didMoveToView(view: SKView) {
     NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(GameScene.saveGameData), name: "saveGameData", object: nil)
@@ -69,6 +72,29 @@ class GameScene: SKScene, GameStateDelegate {
     for stockItem in stockItems {
       stockItem.update()
     }
+    
+    // 1 Check whether it is time for a customer to appear
+    let currentTimeAbsolute = CFAbsoluteTimeGetCurrent()
+    if customer == nil && currentTimeAbsolute - timeOfLastCustomer > timeTillNextCustomer {
+      // 2 Make a list of potential wishes the customer could have
+      var potentialWishes = [StockItem]()
+      for stockItem : StockItem in stockItems {
+        if stockItem.state == State.selling || stockItem.state == State.stocked {
+          potentialWishes.append(stockItem)
+        }
+      }
+      // 3 Select one of the potential wishes randomly and spawn the customer with it
+      if potentialWishes.count > 0 {
+        let random = arc4random() % UInt32(potentialWishes.count)
+        let randomStockItem = potentialWishes[Int(random)]
+        customer = Customer(type: randomStockItem.type, flavor: randomStockItem.flavor)
+        customer!.position = CGPoint(x: frame.size.width + customer!.calculateAccumulatedFrame().size.width / 2, y: customer! .calculateAccumulatedFrame().size.height / 2)
+        // 4 Animate the customer
+        let moveLeft = SKAction.moveBy(CGVector(dx: -customer!.calculateAccumulatedFrame().size.width, dy: 0), duration: 1)
+        customer?.runAction(moveLeft)
+        addChild(customer!)
+      }
+    }
   }
   
   // MARK: Load and save plist file
@@ -122,6 +148,31 @@ class GameScene: SKScene, GameStateDelegate {
     let documentsURL = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)[0]
     let fileURL = documentsURL.URLByAppendingPathComponent(fileName)
     return fileURL.path!
+  }
+  
+  
+  // MARK: - GameStateDelegate
+  func gameStateServeCustomerWithItemOfType(type type: String, flavor: String) {
+    // 1 Check if the player has served the correct item for the customer
+    if customer?.type == type && customer?.flavor == flavor {
+      gameStateDelegateChangeMoneyBy(delta: 50)
+      let playSound = SKAction.playSoundFileNamed("coin.wav", waitForCompletion: true)
+      runAction(playSound)
+    } else {
+      let playSound = SKAction.playSoundFileNamed("hit.wav", waitForCompletion: true)
+      runAction(playSound)
+    }
+    if customer != nil {
+      // 2 Clean up customer
+      let moveRight = SKAction.moveBy(CGVector(dx: customer!.calculateAccumulatedFrame().size.width, dy: 0), duration: 1)
+      customer!.runAction(moveRight, completion:{
+        self.customer?.removeFromParent()
+        self.customer = nil
+      })
+      // 3 Setup spawn of next customer
+      timeOfLastCustomer = CFAbsoluteTimeGetCurrent()
+      timeTillNextCustomer = CFTimeInterval(Float((arc4random() % 15 + 15)) * TimeScale)
+    }
   }
   
   func gameStateDelegateChangeMoneyBy(delta delta: Int) -> Bool {

@@ -14,5 +14,5 @@ enum State: Int {
   case empty, stocking, stocked, selling
 }
 
-let TimeScale: Float = 1
+let TimeScale: Float = 0.1
 

@@ -200,6 +200,10 @@ class StockItem : SKNode {
             }
         case .stocked:
             switchTo(state: State.selling)
+            
+        case .selling:
+            gameStateDelegate.gameStateServeCustomerWithItemOfType(type: type, flavor: flavor)
+            
         default:
             break
         }
