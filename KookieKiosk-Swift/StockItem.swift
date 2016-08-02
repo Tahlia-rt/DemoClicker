@@ -116,6 +116,7 @@ class StockItem : SKNode {
         stockingTimer.zPosition = CGFloat(ZPosition.HUDForeground.rawValue)
     }
     
+    
     // MARK: - Updating States
     func switchTo(state state : State) {
         if self.state != state {
@@ -152,6 +153,8 @@ class StockItem : SKNode {
         stockingTimer.text = String(format: "%.0f", stockingTimeLeft)
     }
     
+    
+    // MARK: - Gamescene Update
     func update() {
         let currentTimeAbsolute = CFAbsoluteTimeGetCurrent()
         let timePassed = currentTimeAbsolute - lastStateSwitchTime
@@ -209,6 +212,7 @@ class StockItem : SKNode {
         }
     }
     
+    
     // MARK: write dictionary for storage of stockitem
     func data() -> NSDictionary {
         let data = NSMutableDictionary()
@@ -219,6 +223,33 @@ class StockItem : SKNode {
         data["y"] = relativeY
         data["state"] = state.rawValue
         return data
+    }
+    
+    
+    // MARK: - Notifications
+    func notificationMessage() -> String? {
+        switch state {
+        case .selling:
+            return String(format: "Your %@ %@ sold out! Remember to restock.", flavor, type)
+        case .stocking:
+            return String(format: "Your %@ %@ is now fully stocked and ready for sale.", flavor, type)
+        default:
+            return nil
+        }
+    }
+    
+    func notificationTime() -> NSTimeInterval {
+        switch state {
+        case .selling:
+            return NSTimeInterval(sellingSpeed * Float(amount))
+            
+        case .stocking:
+            let stockingTimeRequired = stockingSpeed * Float(maxAmount - amount)
+            return NSTimeInterval(stockingTimeRequired)
+            
+        default:
+            return -1
+        }
     }
     
 }

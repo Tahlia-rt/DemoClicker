@@ -41,6 +41,8 @@ class GameScene: SKScene, GameStateDelegate {
     moneyLabel.zPosition = CGFloat(ZPosition.HUDForeground.rawValue)
     addChild(moneyLabel)
     
+    NSNotificationCenter.defaultCenter().addObserver(self, selector: "scheduleNotifications", name: "scheduleNotifications", object: nil)
+    
     loadGameData()
   }
   
@@ -96,6 +98,7 @@ class GameScene: SKScene, GameStateDelegate {
       }
     }
   }
+  
   
   // MARK: Load and save plist file
   func saveGameData() {
@@ -184,4 +187,31 @@ class GameScene: SKScene, GameStateDelegate {
     }
   }
   
+  
+  // MARK: - Notifications
+  func scheduleNotifications() {
+    let itemsSortedByNotificationTime = stockItems.sort({$0.notificationTime() < $1.notificationTime()})
+    var count = 1
+    for stockItem in itemsSortedByNotificationTime {
+      let notificationMessage = stockItem.notificationMessage()
+      if notificationMessage != nil {
+        scheduleNotificationWith(message: notificationMessage!, intervalInSeconds: stockItem.notificationTime(), badgeNumber: count)
+        count += 1
+      }
+    }
+  }
+  
+  func scheduleNotificationWith(message message: String, intervalInSeconds: NSTimeInterval, badgeNumber: Int) {
+    let localNotification = UILocalNotification()
+    let now = NSDate()
+    let notificationTime = now.dateByAddingTimeInterval(intervalInSeconds)
+    
+    localNotification.alertBody = message
+    localNotification.fireDate = notificationTime
+    localNotification.timeZone = NSTimeZone.defaultTimeZone()
+    localNotification.applicationIconBadgeNumber = badgeNumber
+    localNotification.soundName = UILocalNotificationDefaultSoundName
+
+    UIApplication.sharedApplication().scheduleLocalNotification(localNotification)
+  }
 }
